@@ -85,7 +85,7 @@ The figure shows how a service provider can expose a payment-protected API servi
 
 ### Numbered Flow
 
-1. The buyer-side notebook client first inspects the local provider server at `localhost:4021`.
+1. The buyer-side client first inspects the local provider server at `localhost:4021`.
 2. The local FastAPI provider returns basic service metadata, including the protected endpoint, price, network, receiving address, and facilitator configuration.
 3. The buyer client sends an unpaid request to the protected endpoint `/api/v1/dummy-service`.
 4. The x402 middleware blocks the unpaid request and returns `402 Payment Required` with the required payment challenge.
@@ -162,6 +162,148 @@ The figure shows how a service provider can expose a payment-protected API servi
   "tx": "0x789...",
   "response": 200
 }
+~~~
+
+---
+
+## How to Run the Prototype
+
+### Prerequisites
+
+The prototype requires:
+
+- Python 3.10 or newer
+- a local `.env` file
+- a funded test wallet on Base Sepolia
+- test USDC on Base Sepolia
+- internet access for facilitator and blockchain interactions
+
+Install the required Python dependencies:
+
+~~~bash
+pip install fastapi uvicorn python-dotenv requests eth-account x402 blockrun-llm
+~~~
+
+Depending on the notebook, not all dependencies are required at the same time. The two-sided provider demo mainly uses `fastapi`, `uvicorn`, `requests`, `eth-account`, `python-dotenv`, and `x402`. The BlockRun LLM examples additionally use `blockrun-llm`.
+
+---
+
+### Environment Variables
+
+Create a `.env` file in the same folder as the notebooks.
+
+For the two-sided x402 provider demo:
+
+~~~env
+PRIVATE_KEY=0xYOUR_BUYER_WALLET_PRIVATE_KEY
+TPP_RECEIVE_ADDRESS=0xYOUR_PROVIDER_RECEIVING_ADDRESS
+~~~
+
+For the BlockRun LLM examples:
+
+~~~env
+PRIVATE_KEY=0xYOUR_TESTNET_WALLET_PRIVATE_KEY
+BLOCKRUN_WALLET_KEY=0xYOUR_MAINNET_WALLET_PRIVATE_KEY
+~~~
+
+Do not commit the `.env` file to GitHub.
+
+The `.env` file should be listed in `.gitignore`:
+
+~~~gitignore
+.env
+~~~
+
+---
+
+## Running the Buyer-side LLM Prototype
+
+The buyer-side LLM prototype is implemented in the following notebooks:
+
+- `testnet.ipynb`
+- `mainnet.ipynb`
+
+### Testnet version
+
+Use `testnet.ipynb` for the Base Sepolia testnet version.
+
+The notebook:
+
+1. loads the buyer wallet private key from `.env`,
+2. initializes the BlockRun testnet client,
+3. checks the wallet balance before execution,
+4. sends a paid LLM request,
+5. receives the model response,
+6. checks the wallet balance after execution,
+7. calculates the approximate payment cost.
+
+The buyer wallet must hold test USDC on Base Sepolia before running the notebook.
+
+### Mainnet version
+
+Use `mainnet.ipynb` only with caution. It uses real funds on Base mainnet.
+
+The wallet must hold:
+
+- ETH on Base for gas
+- USDC on Base for API payments
+
+---
+
+## Running the Two-sided x402 Provider Demo
+
+The two-sided x402 provider demo is implemented in:
+
+- `x402_two_sided_demo_notebook_existing_env.ipynb`
+
+This demo starts a local FastAPI provider and protects a dummy API endpoint with x402 payment middleware.
+
+### Step 1: Start the local provider server
+
+The notebook writes the provider server to:
+
+~~~text
+x402_tpp_server.py
+~~~
+
+Start the server from a terminal:
+
+~~~bash
+python -m uvicorn x402_tpp_server:app --host 127.0.0.1 --port 4021
+~~~
+
+Leave this terminal running.
+
+### Step 2: Run the notebook client
+
+In the notebook, run the client-side cells after the provider server is running.
+
+The notebook will:
+
+1. inspect the local provider at `localhost:4021`,
+2. call the protected endpoint without payment,
+3. receive `402 Payment Required`,
+4. sign the payment payload with the buyer wallet,
+5. retry the request with payment attached,
+6. verify and settle the payment through the facilitator,
+7. receive the protected dummy JSON response.
+
+The protected endpoint is:
+
+~~~text
+GET /api/v1/dummy-service
+~~~
+
+The demo price is:
+
+~~~text
+$0.001
+~~~
+
+The test network is:
+
+~~~text
+Base Sepolia / eip155:84532
 ~~~
 
 ---
