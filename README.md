@@ -34,7 +34,7 @@ The prototype focuses on the following architectural capabilities:
 
 The buyer-side prototype tests whether an autonomous agent can technically act as a machine customer. The agent calls a paid LLM endpoint, receives a payment challenge, signs the x402 payment payload with its own wallet, and retries the request with the required payment information.
 
-```mermaid
+~~~mermaid
 flowchart LR
 
     %% --------------------------------------------------
@@ -42,7 +42,6 @@ flowchart LR
     %% --------------------------------------------------
     classDef box fill:#ffffff,stroke:#333,stroke-width:1px,rx:8px,ry:8px;
     classDef note fill:#f7f7f7,stroke:#777,stroke-width:1px,rx:6px,ry:6px;
-    classDef settlement fill:#ffffff,stroke:#333,stroke-width:1px,rx:8px,ry:8px;
     classDef group fill:#ffffff,stroke:#999,stroke-width:1px,stroke-dasharray: 4 3;
 
     %% --------------------------------------------------
@@ -109,6 +108,22 @@ flowchart LR
     class Discovery,PaymentRequired,Interpretation note;
 ~~~
 
+**Figure: Buyer-side blockchain-based prototype using x402 and USDC on Base.**  
+The figure shows how an autonomous agent requests paid LLM inference, receives an x402 payment challenge, signs the payment payload with its own wallet, verifies and settles the payment through a facilitator, and receives the LLM response after successful payment handling.
+
+### Numbered Flow
+
+1. The autonomous agent initiates an inference request to the paid LLM endpoint.
+2. The provider returns an HTTP `402 Payment Required` response containing the quoted amount and payment parameters.
+3. The agent interprets the challenge and uses its programmatic wallet to sign the x402 payment payload locally.
+4. The agent retries the original request and attaches the signed payment payload.
+5. The provider submits the payment information to the facilitator for verification.
+6. The facilitator returns the verification result and associated payer metadata.
+7. The provider initiates settlement through the facilitator.
+8. The facilitator submits the USDC transfer authorization to the Base blockchain and waits for confirmation.
+9. After successful verification and settlement, the provider forwards the request to the selected upstream LLM backend.
+10. The provider returns the requested LLM output to the autonomous agent.
+
 ### Buyer-side Test Example
 
 In the testnet setup, the autonomous agent used a funded wallet on the **Base Sepolia test network** to call a paid LLM endpoint via x402.
@@ -157,6 +172,9 @@ sequenceDiagram
     Provider-->>Client: Service response
 ~~~
 
+**Figure: Provider-side view of x402 as an additional payment layer in the API value chain.**  
+The figure shows how a service provider can expose a payment-protected API service, issue a `402 Payment Required` response, verify and settle the payment, and release the protected service only after the payment condition has been satisfied.
+
 ### Simplified `402 Payment Required` Example
 
 ~~~json
@@ -193,6 +211,20 @@ sequenceDiagram
     "to": "0xServiceProvider...",
     "sig": "0xabc..."
   }
+}
+~~~
+
+### Simplified Facilitator Metadata Example
+
+~~~json
+{
+  "valid": true,
+  "settled": true,
+  "network": "eip155:84532",
+  "asset": "USDC",
+  "price": "$0.001",
+  "to": "0xServiceProvider...",
+  "tx": "0x789..."
 }
 ~~~
 
