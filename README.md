@@ -108,9 +108,6 @@ flowchart LR
     class Agent,Wallet,BlockRun,Gateway,Upstream,Facilitator,Base box;
     class Discovery,PaymentRequired,Interpretation note;
 ~~~
-```markdown
-**Figure: Buyer-side blockchain-based prototype using x402 and USDC on Base.**  
-The figure shows how an autonomous agent requests paid LLM inference, receives an x402 payment challenge, signs the payment payload with its own wallet, verifies and settles the payment through a facilitator, and receives the LLM response after successful payment handling.
 
 ### Buyer-side Test Example
 
