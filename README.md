@@ -78,30 +78,24 @@ The provider-side prototype demonstrates the opposite perspective. Instead of on
 
 The provider receives an API request, checks whether payment is required, returns a `402 Payment Required` response, processes a paid retry, verifies and settles the payment, and only then releases the protected service.
 
-~~~mermaid
-sequenceDiagram
-    autonumber
-
-    participant Client as Customer / Machine Agent
-    participant Provider as Service Provider API
-    participant X402 as x402 Payment Layer
-    participant Settlement as Facilitator and Blockchain Settlement
-    participant Service as Protected API Service
-
-    Client->>Provider: API request
-    Provider->>X402: Payment check
-    X402-->>Client: 402 Payment Required
-    Client->>X402: Paid retry with payment payload
-    X402->>Settlement: Verify and settle payment
-    Settlement-->>X402: Payment confirmed
-    X402->>Provider: Unlock protected service
-    Provider->>Service: Execute service logic
-    Service-->>Provider: Service result
-    Provider-->>Client: Service response
-~~~
+<img width="883" height="596" alt="Screenshot 2026-05-06 093631" src="https://github.com/user-attachments/assets/1e1c7bb1-2c32-4551-a3dc-c947d0186ebf" />
 
 **Figure: Provider-side view of x402 as an additional payment layer in the API value chain.**  
 The figure shows how a service provider can expose a payment-protected API service, issue a `402 Payment Required` response, verify and settle the payment, and release the protected service only after the payment condition has been satisfied.
+
+### Numbered Flow
+
+1. The buyer-side notebook client first inspects the local provider server at `localhost:4021`.
+2. The local FastAPI provider returns basic service metadata, including the protected endpoint, price, network, receiving address, and facilitator configuration.
+3. The buyer client sends an unpaid request to the protected endpoint `/api/v1/dummy-service`.
+4. The x402 middleware blocks the unpaid request and returns `402 Payment Required` with the required payment challenge.
+5. The buyer client uses the buyer wallet loaded from the local environment to sign the x402 payment payload.
+6. The buyer client retries the protected API request with the signed payment payload attached.
+7. The provider-side x402 middleware sends the payment information to the x402 facilitator for verification.
+8. The facilitator returns the payment verification and settlement result to the provider-side middleware.
+9. The facilitator coordinates settlement on the Base Sepolia test network using USDC.
+10. After successful payment handling, the middleware unlocks the protected dummy service.
+11. The protected service returns the paid JSON response to the buyer client.
 
 ### Simplified `402 Payment Required` Example
 
