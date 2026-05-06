@@ -34,31 +34,83 @@ The prototype focuses on the following architectural capabilities:
 
 The buyer-side prototype tests whether an autonomous agent can technically act as a machine customer. The agent calls a paid LLM endpoint, receives a payment challenge, signs the x402 payment payload with its own wallet, and retries the request with the required payment information.
 
-~~~mermaid
-sequenceDiagram
-    autonumber
+```mermaid
+flowchart LR
 
-    participant Agent as Autonomous Agent
-    participant Wallet as Agent Wallet
-    participant Provider as Paid LLM API / Resource Server
-    participant Facilitator as x402 Facilitator
-    participant Chain as Base Blockchain / USDC
-    participant LLM as Upstream LLM Service
+    %% --------------------------------------------------
+    %% STYLES
+    %% --------------------------------------------------
+    classDef box fill:#ffffff,stroke:#333,stroke-width:1px,rx:8px,ry:8px;
+    classDef note fill:#f7f7f7,stroke:#777,stroke-width:1px,rx:6px,ry:6px;
+    classDef settlement fill:#ffffff,stroke:#333,stroke-width:1px,rx:8px,ry:8px;
+    classDef group fill:#ffffff,stroke:#999,stroke-width:1px,stroke-dasharray: 4 3;
 
-    Agent->>Provider: Request paid LLM inference
-    Provider-->>Agent: 402 Payment Required with payment parameters
-    Agent->>Wallet: Prepare and sign x402 payment payload
-    Wallet-->>Agent: Signed payment payload
-    Agent->>Provider: Retry request with signed payment payload
-    Provider->>Facilitator: Verify payment payload
-    Facilitator-->>Provider: Verification result
-    Provider->>Facilitator: Request settlement
-    Facilitator->>Chain: Submit USDC transfer authorization
-    Chain-->>Facilitator: Settlement confirmation
-    Provider->>LLM: Forward inference request
-    LLM-->>Provider: LLM response
-    Provider-->>Agent: Return LLM response and payment response
-~~~
+    %% --------------------------------------------------
+    %% BUYER SIDE
+    %% --------------------------------------------------
+    subgraph Buyer["Buyer side / autonomous agent"]
+        Agent["**Autonomous AI agent / orchestrator**<br/><br/><i>Prototype scope: internal reasoning omitted</i><br/><br/>• decides it needs LLM inference<br/>• calls a paid HTTP endpoint<br/>• handles 402 challenge automatically"]
+        Wallet["**Agent wallet**<br/><br/>EOA / programmatic wallet<br/>funded with **USDC on Base**<br/>signs x402 payment payload locally"]
+    end
+
+    %% --------------------------------------------------
+    %% PROVIDER SIDE
+    %% --------------------------------------------------
+    subgraph Provider["LLM service provider"]
+        BlockRun["**LLM provider:**<br/>BlockRun<br/><br/>**Paid endpoint:**<br/>POST https://blockrun.ai/api/v1/chat/completions<br/><br/>**Example model ID:**<br/>openai/gpt-oss-20b<br/><br/>Acts as x402-paid gateway / router for LLM inference"]
+        Gateway["**Resource server logic**<br/><br/>• returns 402 Payment Required<br/>• includes PAYMENT-REQUIRED<br/>• validates payment via facilitator<br/>• settles payment<br/>• then serves the LLM result"]
+        Upstream["**Upstream model vendors**<br/><br/>OpenAI / Anthropic / Google / others<br/>selected by provider routing logic"]
+    end
+
+    %% --------------------------------------------------
+    %% FACILITATOR AND SETTLEMENT
+    %% --------------------------------------------------
+    subgraph Settlement["Verification and on-chain settlement"]
+        Facilitator["**x402 facilitator**<br/><br/>https://api.cdp.coinbase.com/platform/v2/x402<br/><br/>**Core protocol endpoints:**<br/>• POST /verify<br/>• POST /settle<br/><br/>Optionally exposes discovery APIs"]
+        Base["**Base blockchain settlement layer**<br/><br/>**Network:** eip155:8453<br/>**Asset:** USDC<br/>**USDC contract:**<br/>0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"]
+    end
+
+    %% --------------------------------------------------
+    %% OPTIONAL DISCOVERY
+    %% --------------------------------------------------
+    Discovery["**Optional service discovery**<br/><br/>GET /discovery/resources<br/><br/>Agent queries the x402 Bazaar for available payable LLM/API services, for example BlockRun, then selects one provider endpoint."]
+
+    %% --------------------------------------------------
+    %% NOTES
+    %% --------------------------------------------------
+    PaymentRequired["**Typical PAYMENT-REQUIRED contents**<br/><br/>• scheme = exact<br/>• network = eip155:8453<br/>• asset = USDC on Base<br/>• amount<br/>• payTo<br/>• maxTimeoutSeconds"]
+
+    Interpretation["**Prototype interpretation**<br/><br/>The figure suppresses internal planning/tool logic and highlights only:<br/><br/>request → 402 challenge → sign → verify → settle → response"]
+
+    %% --------------------------------------------------
+    %% NUMBERED FLOW
+    %% --------------------------------------------------
+    Agent -->|"1"| BlockRun
+    BlockRun -->|"2"| Agent
+    Agent -->|"3"| Wallet
+    Wallet -->|"4"| Gateway
+    Gateway -->|"5"| Facilitator
+    Facilitator -->|"6"| Gateway
+    Gateway -->|"7"| Facilitator
+    Facilitator -->|"8"| Base
+    Gateway -->|"9"| Upstream
+    Upstream -->|"10"| Agent
+
+    %% Optional discovery path
+    Agent -.-> Discovery
+    Discovery -.-> Facilitator
+
+    %% Notes
+    Wallet -.-> PaymentRequired
+    Base -.-> Interpretation
+
+    %% Classes
+    class Agent,Wallet,BlockRun,Gateway,Upstream,Facilitator,Base box;
+    class Discovery,PaymentRequired,Interpretation note;
+
+```markdown
+**Figure: Buyer-side blockchain-based prototype using x402 and USDC on Base.**  
+The figure shows how an autonomous agent requests paid LLM inference, receives an x402 payment challenge, signs the payment payload with its own wallet, verifies and settles the payment through a facilitator, and receives the LLM response after successful payment handling.
 
 ### Buyer-side Test Example
 
