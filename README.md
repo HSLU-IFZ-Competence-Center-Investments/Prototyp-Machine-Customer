@@ -1,6 +1,6 @@
-# Blockchain-based Prototype
+# x402 Prototype for Autonomous Machine-Customer Payments
 
-This repository contains a blockchain-based prototype for testing how autonomous machine customers can consume and provide paid digital services. The prototype is based on the **x402 payment pattern**, where payment requirements are embedded directly into the HTTP request-response cycle using `402 Payment Required`.
+This repository contains a blockchain-based prototype for testing how autonomous machine customers can consume paid digital services and how service providers can expose payment-gated API services. The prototype is based on the **x402 payment pattern**, where payment requirements are embedded directly into the HTTP request-response cycle using `402 Payment Required`.
 
 The prototype does not assume that all future machine-customer interactions must run on public blockchains. Instead, blockchain-based settlement is used as an experimental environment to test autonomous machine-to-machine payments, programmable settlement, and cryptographically verifiable execution.
 
@@ -10,7 +10,7 @@ The repository demonstrates two related prototype perspectives:
    An autonomous agent consumes a paid LLM service. The agent receives an x402 payment challenge, signs the payment payload with its own wallet, retries the request with the payment information, and receives the LLM response after successful payment handling.
 
 2. **Provider-side prototype**  
-   A service provider exposes a payment-protected API endpoint. The provider returns a `402 Payment Required` response, verifies and settles the payment through a facilitator, and releases the protected API service only after the payment condition has been satisfied.
+   A local FastAPI service provider exposes a payment-protected dummy API endpoint. The provider returns a `402 Payment Required` response, verifies and settles the payment through a facilitator, and releases the protected dummy service only after the payment condition has been satisfied.
 
 Together, the two prototypes illustrate how x402 can connect autonomous service consumption with programmable API monetization.
 
@@ -192,17 +192,16 @@ Depending on the notebook, not all dependencies are required at the same time. T
 
 Create a `.env` file in the same folder as the notebooks.
 
-For the two-sided x402 provider demo:
+For the two-sided x402 provider demo and the BlockRun testnet example:
 
 ~~~env
-PRIVATE_KEY=0xYOUR_BUYER_WALLET_PRIVATE_KEY
+PRIVATE_KEY=0xYOUR_TESTNET_BUYER_WALLET_PRIVATE_KEY
 TPP_RECEIVE_ADDRESS=0xYOUR_PROVIDER_RECEIVING_ADDRESS
 ~~~
 
-For the BlockRun LLM examples:
+For the BlockRun mainnet example:
 
 ~~~env
-PRIVATE_KEY=0xYOUR_TESTNET_WALLET_PRIVATE_KEY
 BLOCKRUN_WALLET_KEY=0xYOUR_MAINNET_WALLET_PRIVATE_KEY
 ~~~
 
@@ -266,6 +265,8 @@ The notebook writes the provider server to:
 x402_tpp_server.py
 ~~~
 
+Before starting the server, run the notebook cell that writes `x402_tpp_server.py`, or include the generated `x402_tpp_server.py` file directly in the repository.
+
 Start the server from a terminal:
 
 ~~~bash
@@ -310,7 +311,7 @@ Base Sepolia / eip155:84532
 
 ## Interpretation
 
-The buyer-side prototype shows how an autonomous agent can execute payments and consume an LLM service without direct human interaction. The provider-side prototype shows how a service provider can make an API service monetizable, machine-consumable, and conditionally accessible through programmable payments.
+The buyer-side prototype shows how an autonomous agent can execute payments and consume an LLM service without direct human interaction. The provider-side prototype shows how a local FastAPI service provider can make a dummy API service monetizable, machine-consumable, and conditionally accessible through programmable payments.
 
 Together, the prototypes demonstrate a minimal machine-commerce interaction:
 
