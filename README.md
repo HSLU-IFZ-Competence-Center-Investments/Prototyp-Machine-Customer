@@ -328,4 +328,5 @@ The prototype therefore illustrates how x402 can support real-time, pay-per-use 
 
 ## ⚠️ Disclaimer
 
-Included concepts, models, data, software elements, or recommendations are intended solely for research, demonstration, or illustrative purposes. They are not meant for productive use, system integration, or operational implementation and do not constitute any statement regarding regulatory compliance. Use in operational or regulatory-relevant contexts occurs outside the responsibility of the IFZ.
+Any concepts, models, data, software elements, or recommendations included are provided solely for research, demonstration, or illustrative purposes. They are not intended for production use, system integration, or operational implementation and do not constitute any representation regarding regulatory compliance. Any use in operational or regulatory-relevant contexts is outside the scope of responsibility of the IFZ.<img width="4468" height="45" alt="image" src="https://github.com/user-attachments/assets/687df180-b5f5-468b-8478-5cafe0b99eb5" />
+IFZ.
