@@ -326,6 +326,19 @@ The prototype therefore illustrates how x402 can support real-time, pay-per-use 
 
 ---
 
+## A two-sided machine-commerce demo​
+A buyer agent paying a provider API through x402 on Base Sepolia test network.​
+<video src="https://github.com/HSLU-IFZ-Competence-Center-Investments/Prototyp-Machine-Customer/blob/main/Machine%20Customer.mp4"
+       controls
+       autoplay
+       muted
+       loop
+       width="700">
+</video>
+---
+
+
+
 ## ⚠️ Disclaimer
 
 Any concepts, models, data, software elements, or recommendations included are provided solely for research, demonstration, or illustrative purposes. They are not intended for production use, system integration, or operational implementation and do not constitute any representation regarding regulatory compliance. Any use in operational or regulatory-relevant contexts is outside the scope of responsibility of the IFZ.
